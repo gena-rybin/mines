@@ -12,7 +12,8 @@ var y=0;
 var data = [];
 var bombes=0;
 var count=0;
-
+var bombesInGame=0;
+var bombesPosition = [];
 
 var htmlA;
 var htmlB;
@@ -53,7 +54,7 @@ htmlB += ".gameCell {border: 1px solid grey ; \
     line-height: 1.1em; \
     width: 1.1em; \
     text-align: center; \
-	border-radius:4px; \
+	border-radius:2px; \
     display: inline-block; \
     text-align: center; \
     vertical-align: middle; \
@@ -68,7 +69,9 @@ htmlB +=".color4 {color: Magenta !important; font-weight: bold;}";
 htmlB +=".color5 {color: black !important; font-weight: bold;}";       
 htmlB +=".color6 {color: tomato !important; font-weight: bold;}";       
 htmlB +=".color7 {color: purple !important; font-weight: bold;}";       
-htmlB +=".color8 {color: white !important; font-weight: bold;}";       
+htmlB +=".color8 {color: white !important; font-weight: bold;}";     
+htmlB +=".bomb {color: white !important; font-weight: bolder; background-color: red;}";       
+
 htmlC = "</style>";
 
 
@@ -127,7 +130,7 @@ divGameRows.className = 'gameRows';
 
 var divGameRow = div.cloneNode(false);
 divGameRow.className = 'gameRow';
-divGameRow.style.cssText="display: inline-block; margin:0;";
+divGameRow.style.cssText=" margin:0;";
 
 var divGameCell = div.cloneNode(false);
 divGameCell.className = 'gameCell';
@@ -180,8 +183,8 @@ function makeGameField(rows, columns) {
 			divGameCell = divGameCell.cloneNode(false);
 			divGameRow.appendChild(divGameCell);
 		}
-		br = br.cloneNode(false);
-		divGameRows.appendChild(br);
+		// br = br.cloneNode(false);
+		// divGameRows.appendChild(br);
 	}   	
 	divCover.appendChild(divGameRows);
 	//console.dir(divGameRows);
@@ -229,7 +232,7 @@ function getPosition() {
 		  });
 		  event.target.parentNode.parentNode.childNodes.forEach(function(item, index) {
 		   if (item === event.target.parentNode) {     
-		    y = index/2;
+		    y = index;
 		   }
 		  });
 	console.log('clicked: строка='+y+', ячейка='+x);
@@ -240,103 +243,134 @@ function getPosition() {
 divCover.addEventListener("click", function (event) {
 	var cell = event.target;
 	var count = 0;
-
+	console.log(cell);
+	console.dir(cell);
 	getPosition();
 	cell.classList.remove("closed");
 	if (data[y][x] == 1) {
-		foundBombs();
+		foundBombs(cell);
 		return;
 	}
 	count = countNeighborBombs();
-
-	switch (count) {
-	  case 0:
-		  break;
-	  case 1:
-		  cell.classList.add("color1");
-		  cell.textContent = count;
-		  break;
-	  case 2:
-		  cell.classList.add("color2");
-		  cell.textContent = count;
-		  break;
-	  case 3:
-		  cell.classList.add("color3");
-		  cell.textContent = count;
-		  break;
-	  case 4:
-		  cell.classList.add("color4");
-		  cell.textContent = count;
-		  break;
-	  case 5:
-		  cell.classList.add("color5");
-		  cell.textContent = count;
-		  break;
-	  case 6:
-		  cell.classList.add("color6");
-		  cell.textContent = count;
-		  break;
-	  case 7:
-		  cell.classList.add("color7");
-		  cell.textContent = count;
-		  break;
-	  case 8:
-		  cell.classList.add("color8");
-		  cell.textContent = count;
-		  break;
-	  default:
-	    break;
-	}	
+	if (count==0) return;
+	else {
+		cell.textContent = count;
+		switch (count) {
+		  case 1:
+			  cell.classList.add("color1");
+			  break;
+		  case 2:
+			  cell.classList.add("color2");
+			  break;
+		  case 3:
+			  cell.classList.add("color3");
+			  break;
+		  case 4:
+			  cell.classList.add("color4");
+			  break;
+		  case 5:
+			  cell.classList.add("color5");
+			  break;
+		  case 6:
+			  cell.classList.add("color6");
+			  break;
+		  case 7:
+			  cell.classList.add("color7");
+			  break;
+		  case 8:
+			  cell.classList.add("color8");
+			  break;
+		  default:
+		    break;
+		}	
+	}
 	
 	//if (count>0) event.target.textContent=count;
 });
 
 
 function countNeighborBombs() {
-	height = +document.getElementById("height").value;
-	width = +document.getElementById("width").value;
 	count = 0;
 
-    // крайние соседние точки from clicked
-	var top = 0;
-	top = y-1;
-    if (top >= 0) {top = true;}
-    else 	      {top = false;}
+	if(data[y-1] && data[y-1][x-1] === 1) {
+		count++;
+	}
+	if(data[y-1] && data[y-1][x] === 1) {
+		count++;
+	}
+	if(data[y-1] && data[y-1][x+1] === 1) {
+		count++;
+	}
+	if(data[y] && data[y][x-1] === 1) {
+		count++;
+	}
+	if(data[y] && data[y][x+1] === 1) {
+		count++;
+	}
+	if(data[y+1] && data[y+1][x-1] === 1) {
+		count++;
+	}
+	if(data[y+1] && data[y+1][x] === 1) {
+		count++;
+	}
+	if(data[y+1] && data[y+1][x+1] === 1) {
+		count++;
+	}
+	return count;
+ //    // крайние соседние точки from clicked
+	// var top = 0;
+	// top = y-1;
+ //    if (top >= 0) {top = true;}
+ //    else 	      {top = false;}
 
-	var right = 0;
-	right = x+1;
-    if (right < width) {right = true;}
-    else 			   {right = false;}
+	// var right = 0;
+	// right = x+1;
+ //    if (right < width) {right = true;}
+ //    else 			   {right = false;}
 
-	var bottom = 0;
-	bottom = y+1;
-    if (bottom < height) {bottom = true;}
-    else 	             {bottom = false;}
+	// var bottom = 0;
+	// bottom = y+1;
+ //    if (bottom < height) {bottom = true;}
+ //    else 	             {bottom = false;}
 
-	var left = 0;
-	left = x - 1;
-    if (left >= 0)  {left = true;}
-    else 			{left = false;}
+	// var left = 0;
+	// left = x - 1;
+ //    if (left >= 0)  {left = true;}
+ //    else 			{left = false;}
 
-    // write new array with Neighbor+-1 cells
-	var temp = [];
-	if (top && left)  		{temp.push(data[y-1][x-1]);}
-	if (top ) 		  		{temp.push(data[y-1][x]);}
-	if (top && right) 		{temp.push(data[y-1][x+1]);}
-	if (right)  	  		{temp.push(data[y][x+1]);}
-	if (bottom && right)  	{temp.push(data[y+1][x+1]);}
-	if (bottom)  			{temp.push(data[y+1][x]);}
-	if (bottom && left)  	{temp.push(data[y-1][x-1]);}
-	if (left)  				{temp.push(data[y][x-1]);}
-
-	var result = temp.reduce(function(sum, current) {
-	  return sum + current;
-	}, 0); 
-	return 	result;
+ //    // write new array with Neighbor+-1 cells
+	// var temp = [];
+	// if (top && left)  		temp.push(data[y-1][x-1]);
+	// if (top ) 		  		{temp.push(data[y-1][x]);}
+	// if (top && right) 		{temp.push(data[y-1][x+1]);}
+	// if (right)  	  		{temp.push(data[y][x+1]);}
+	// if (bottom && right)  	{temp.push(data[y+1][x+1]);}
+	// if (bottom)  			{temp.push(data[y+1][x]);}
+	// if (bottom && left)  	{temp.push(data[y-1][x-1]);}
+	// if (left)  				{temp.push(data[y][x-1]);}
+	// console.log(temp);
+	// var result = temp.reduce(function(sum, current) {
+	//   return sum + current;
+	// }, 0); 
+	// return 	result;
 }
 
-	function foundBombs() {
-		console.log('БОМБА !');
+function foundBombs(cell) {
+	cell.textContent = "B!";
+	cell.classList.add("bomb");
+	console.log('БОМБА !');
+	for (var j=0; j<height; j++) {
+		data[j].forEach(function(value, ind) {
+			console.log(divGameRows.childNodes);
+			if (value == 1) {
+				divGameRows.childNodes[j].childNodes[ind].textContent = "B!";
+				divGameRows.childNodes[j].childNodes[ind].classList.add("bomb");
+				divGameRows.childNodes[j].childNodes[ind].classList.remove("closed");
+			}
+		});		
 	}
+}
+
+
 
 }
