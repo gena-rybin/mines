@@ -166,6 +166,7 @@ sizeArea.addEventListener("change", function () {
 	bombes = +document.getElementById("bombes").value;
 	makeGameField(height,width);
 	makeGameData(height,width);
+	divGameCell.classList.remove("bomb");	
 });
 
 
