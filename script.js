@@ -62,6 +62,7 @@ htmlB += ".gameCell {border: 1px solid grey ; \
 htmlB +=".cover {border: 1px solid green ; \
 	background-color: white;}";   
 htmlB +=".closed {border: 5px outset grey !important; padding: 0px !important; background-color: MediumTurquoise !important; }";   	
+htmlB +=".opened { }";   	
 htmlB +=".color1 {color: blue !important; font-weight: bold;}";       
 htmlB +=".color2 {color: MediumSeaGreen !important; font-weight: bold;}";       
 htmlB +=".color3 {color: red !important; font-weight: bold;}";       
@@ -70,8 +71,8 @@ htmlB +=".color5 {color: black !important; font-weight: bold;}";
 htmlB +=".color6 {color: tomato !important; font-weight: bold;}";       
 htmlB +=".color7 {color: purple !important; font-weight: bold;}";       
 htmlB +=".color8 {color: white !important; font-weight: bold;}";     
-htmlB +=".bomb {color: white !important; font-weight: bolder; background-color: red;}";       
-
+htmlB +=".bomb {color: white !important; font-weight: bolder; background-color: tomato;}";       
+htmlB +=".flag {color: white !important; font-weight: bolder; background-color: tomato !important;}";       
 htmlC = "</style>";
 
 
@@ -79,7 +80,8 @@ htmlC = "</style>";
 h1.innerHTML = '#05 task';
 
 var pInfo = p.cloneNode(false);
-pInfo.innerHTML = "<p>Please, set game size:</p>";
+pInfo.innerHTML = "<p>To play the game use <span style='font-weight:bold'>left click</span> (to open the cell) and <span style='font-weight:bold'>right click</span> (to flag the bomb).</p>";
+pInfo.innerHTML += "<p>Please, set game size:</p>";
 
 var spanSelect = span.cloneNode(false);
 spanSelect.setAttribute("id", "size");
@@ -144,18 +146,16 @@ body.appendChild(pInfo);
 body.appendChild(divWrapper);
 divWrapper.appendChild(spanSelect);
 divWrapper.appendChild(divCover);
-// body.appendChild(document.createElement('br'));
-// body.appendChild(document.createElement('br'));
 makeGameField(10, 10);
 makeGameData(10, 10);
 console.table( data );
+divCover.setAttribute(oncontextmenu, "javascript:alert('success!');return false;");
 
 
 // settings for Game's field
 var height = +document.getElementById("height").value;
 var width  = +document.getElementById("width").value;
 var sizeArea = document.getElementById("size");
-//var size = document.getElementsByClassName('size');
 
 
 
@@ -166,8 +166,6 @@ sizeArea.addEventListener("change", function () {
 	bombes = +document.getElementById("bombes").value;
 	makeGameField(height,width);
 	makeGameData(height,width);
-	//dataX=emptyData();
-	//dataO=emptyData();
 });
 
 
@@ -183,12 +181,8 @@ function makeGameField(rows, columns) {
 			divGameCell = divGameCell.cloneNode(false);
 			divGameRow.appendChild(divGameCell);
 		}
-		// br = br.cloneNode(false);
-		// divGameRows.appendChild(br);
 	}   	
 	divCover.appendChild(divGameRows);
-	//console.dir(divGameRows);
-	//console.log(divGameRows);
 }
 
 
@@ -224,7 +218,6 @@ function makeGameData(height,width) {
 
 // gets the position of clicked cell
 function getPosition() {
-		//var self = this;
 		  event.target.parentNode.childNodes.forEach(function(item, i) {
 		   if (item === event.target) {  
 		    x = i;
@@ -239,14 +232,42 @@ function getPosition() {
 }
 
 
-// clicking at game's field
-divCover.addEventListener("click", function (event) {
+
+// put the FLAG on the bomb-cell - right-clicking at game's field
+divCover.addEventListener('contextmenu', cellRIGHTclick, false);
+function cellRIGHTclick(ev) {
+    ev.preventDefault();
+	if (ev.target.classList.contains("opened")) {
+		ev.target.removeEventListener("contextmenu", cellRIGHTclick, false);
+		return;
+	}
+	if (ev.target.classList.contains("closed")) {
+	    ev.target.classList.toggle("flag");
+		ev.target.textContent = '';
+		if (ev.target.classList.contains("flag")) {
+			ev.target.textContent = '?';
+			ev.target.removeEventListener("click", cellLEFTclick);
+		}
+	}
+
+    return false;
+}
+
+
+// left-clicking at game's field
+divCover.addEventListener("click", cellLEFTclick);
+function cellLEFTclick(event) {
 	var cell = event.target;
 	var count = 0;
-	console.log(cell);
-	console.dir(cell);
+
+	if (cell.classList.contains("flag")) {
+		return;
+	}
+	cell.removeEventListener('contextmenu', cellRIGHTclick, false);
+
 	getPosition();
 	cell.classList.remove("closed");
+	cell.classList.add("opened");
 	if (data[y][x] == 1) {
 		foundBombs(cell);
 		return;
@@ -284,9 +305,8 @@ divCover.addEventListener("click", function (event) {
 		    break;
 		}	
 	}
-	
-	//if (count>0) event.target.textContent=count;
-});
+}
+
 
 
 function countNeighborBombs() {
@@ -317,42 +337,6 @@ function countNeighborBombs() {
 		count++;
 	}
 	return count;
- //    // крайние соседние точки from clicked
-	// var top = 0;
-	// top = y-1;
- //    if (top >= 0) {top = true;}
- //    else 	      {top = false;}
-
-	// var right = 0;
-	// right = x+1;
- //    if (right < width) {right = true;}
- //    else 			   {right = false;}
-
-	// var bottom = 0;
-	// bottom = y+1;
- //    if (bottom < height) {bottom = true;}
- //    else 	             {bottom = false;}
-
-	// var left = 0;
-	// left = x - 1;
- //    if (left >= 0)  {left = true;}
- //    else 			{left = false;}
-
- //    // write new array with Neighbor+-1 cells
-	// var temp = [];
-	// if (top && left)  		temp.push(data[y-1][x-1]);
-	// if (top ) 		  		{temp.push(data[y-1][x]);}
-	// if (top && right) 		{temp.push(data[y-1][x+1]);}
-	// if (right)  	  		{temp.push(data[y][x+1]);}
-	// if (bottom && right)  	{temp.push(data[y+1][x+1]);}
-	// if (bottom)  			{temp.push(data[y+1][x]);}
-	// if (bottom && left)  	{temp.push(data[y-1][x-1]);}
-	// if (left)  				{temp.push(data[y][x-1]);}
-	// console.log(temp);
-	// var result = temp.reduce(function(sum, current) {
-	//   return sum + current;
-	// }, 0); 
-	// return 	result;
 }
 
 function foundBombs(cell) {
